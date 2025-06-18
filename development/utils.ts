@@ -1,5 +1,11 @@
 import { Alert } from 'react-native';
-import { Currency, DynamicMultiSplitProps, PaymentChannels, PaystackParams, PaystackTransactionResponse } from './types';
+import {
+  Currency,
+  DynamicMultiSplitProps,
+  PaymentChannels,
+  PaystackParams,
+  PaystackTransactionResponse,
+} from './types';
 
 export const validateParams = (params: PaystackParams, debug: boolean): boolean => {
   const errors: string[] = [];
@@ -22,11 +28,7 @@ export const validateParams = (params: PaystackParams, debug: boolean): boolean 
   return true;
 };
 
-export const sanitize = (
-  value: unknown,
-  fallback: string | number | object,
-  wrapString = true
-): string => {
+export const sanitize = (value: unknown, fallback: string | number | object, wrapString = true): string => {
   try {
     if (typeof value === 'string') return wrapString ? `'${value}'` : value;
     return JSON.stringify(value ?? fallback);
@@ -122,7 +124,7 @@ export const generatePaystackParams = (config: {
       }`,
     `onError: function(error) {
         window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'error', error: { message: error.message } }));
-      }`
+      }`,
   ];
 
   return props.filter(Boolean).join(',\n');
@@ -130,7 +132,7 @@ export const generatePaystackParams = (config: {
 
 export const paystackHtmlContent = (
   params: string,
-  method: 'checkout' | 'newTransaction' = 'checkout'
+  method: 'checkout' | 'newTransaction' | 'resumeTransaction' = 'checkout',
 ): string => `
     <!DOCTYPE html>
     <html lang="en">
