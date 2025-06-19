@@ -64,6 +64,7 @@ export const PaystackProvider: React.FC<PaystackProviderProps> = ({
     return paystackHtmlContent(
       generatePaystackParams({
         publicKey,
+        access_code: params.access_code,
         email: params.email,
         amount: params.amount,
         reference: params.reference || fallbackRef,

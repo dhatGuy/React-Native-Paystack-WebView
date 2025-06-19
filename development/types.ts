@@ -35,6 +35,14 @@ export type PaystackParams = {
   onError?: (res: any) => void;
 };
 
+export type ResumeTransactionParams = {
+  access_code: string;
+  onSuccess: (data: PaystackTransactionResponse) => void;
+  onCancel: () => void;
+  onLoad?: (res: PaystackOnloadResponse) => void;
+  onError?: (res: any) => void;
+};
+
 export type PaystackCheckoutParams = {
   email: string;
   amount: number;

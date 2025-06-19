@@ -88,6 +88,7 @@ export const handlePaystackMessage = ({
 
 export const generatePaystackParams = (config: {
   publicKey: string;
+  access_code?: string;
   email: string;
   amount: number;
   reference: string;
@@ -99,11 +100,15 @@ export const generatePaystackParams = (config: {
   subaccount?: string;
   split_code?: string;
   split?: DynamicMultiSplitProps;
-}): string => {
+}): {
+  paramsString: string;
+  accessCode: string | undefined;
+} => {
   const props = [
     `key: '${config.publicKey}'`,
     `email: '${config.email}'`,
     `amount: ${config.amount * 100}`,
+    config.access_code ? `access_code: '${config.access_code}'` : '',
     config.currency ? `currency: '${config.currency}'` : '',
     `reference: '${config.reference}'`,
     config.metadata ? `metadata: ${JSON.stringify(config.metadata)}` : '',
@@ -127,30 +132,43 @@ export const generatePaystackParams = (config: {
       }`,
   ];
 
-  return props.filter(Boolean).join(',\n');
+  return {
+    paramsString: props.filter(Boolean).join(',\n'),
+    accessCode: config.access_code,
+  };
 };
 
 export const paystackHtmlContent = (
-  params: string,
+  params: {
+    paramsString: string;
+    accessCode: string | undefined;
+  },
   method: 'checkout' | 'newTransaction' | 'resumeTransaction' = 'checkout',
-): string => `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Paystack</title>
-    </head>
-    <body onload="payWithPaystack()" style="background-color:#fff;height:100vh">
-      <script src="https://js.paystack.co/v2/inline.js"></script>
-      <script>
-        function payWithPaystack() {
-          var paystack = new PaystackPop();
-          paystack.${method}({
-            ${params}
-          });
-        }
-      </script>
-    </body>
-    </html>
-  `;
+): string => {
+  const isResumeTransaction = method === 'resumeTransaction';
+  const { paramsString, accessCode } = params;
+
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paystack</title>
+  </head>
+  <body onload="payWithPaystack()" style="background-color:#fff;height:100vh">
+  <script src="https://js.paystack.co/v2/inline.js"></script>
+  <script>
+    function payWithPaystack() {
+      var paystack = new PaystackPop();
+            ${
+              isResumeTransaction
+                ? `paystack.resumeTransaction('${accessCode}', {${paramsString}});`
+                : `paystack.${method}({${paramsString}});`
+            }
+    }
+    
+  </script>
+  </body>
+  </html>`;
+};
